@@ -83,14 +83,14 @@ Apache Kafka is a distributed event streaming platform designed for:
 ## Architecture
 
 ```
-┌──────────────┐         ┌──────────────────┐         ┌──────────────┐
-│              │ produce │                  │ consume │              │
-│  Producer    ├────────►│  Kafka Broker    ├────────►│   Consumer   │
-│ (producer.py)│         │   (Docker)       │         │ (consumer.py)│
-│              │         │                  │         │              │
-└──────────────┘         │  Topic: orders   │         └──────────────┘
-                         │  Port: 9092      │
-                         └──────────────────┘
++---------------+         +------------------+         +---------------+
+|               | produce |                  | consume |               |
+|   Producer    +-------->|  Kafka Broker    +-------->|   Consumer    |
+| (producer.py) |         |   (Docker)       |         | (consumer.py) |
+|               |         |                  |         |               |
++---------------+         |  Topic: orders   |         +---------------+
+                          |  Port: 9092      |
+                          +------------------+
 ```
 
 ### Detailed Sequence Diagram
@@ -106,11 +106,11 @@ Producer              Kafka Broker           Consumer
     |   topic="orders"     |                      |
     |                      |                      |
     |                      |--[3] Store Message-->|
-    |                      |   (partition + offset)|
+    |                      |   (partition+offset) |
     |                      |                      |
     |<-[4] callback--------|                      |
     |   delivery_report()  |                      |
-    |   (partition, offset)|                      |
+    |   (partition,offset) |                      |
     |                      |                      |
     |--[5] flush()-------->|                      |
     |   (ensure delivery)  |                      |
@@ -130,13 +130,15 @@ Producer              Kafka Broker           Consumer
 ### Data Flow Explained
 
 #### Producer Flow (producer.py)
-1. **Create Order Message**: Generates order with UUID, user, item, quantity (producer.py:19-24)
-2. **Serialize to JSON**: Converts dictionary to JSON and encodes to UTF-8 bytes (producer.py:26)
-3. **Send to Topic**: Calls `producer.produce()` to send message to "orders" topic (producer.py:28-32)
-4. **Delivery Callback**: `delivery_report()` confirms successful delivery with partition and offset (producer.py:12-17)
-5. **Flush**: Ensures all buffered messages are sent before exit (producer.py:34)
+
+1. **Create Order Message**: Generates order with UUID, user, item, quantity ([producer.py:19-24](producer.py#L19-L24))
+2. **Serialize to JSON**: Converts dictionary to JSON and encodes to UTF-8 bytes ([producer.py:26](producer.py#L26))
+3. **Send to Topic**: Calls `producer.produce()` to send message to "orders" topic ([producer.py:28-32](producer.py#L28-L32))
+4. **Delivery Callback**: `delivery_report()` confirms successful delivery with partition and offset ([producer.py:12-17](producer.py#L12-L17))
+5. **Flush**: Ensures all buffered messages are sent before exit ([producer.py:34](producer.py#L34))
 
 #### Kafka Broker Flow
+
 1. **Receive Message**: Accepts message from producer on port 9092
 2. **Store in Partition**: Writes message to partition with unique offset
 3. **Persist to Disk**: Saves to `/tmp/kraft-combined-logs` (durable storage)
@@ -144,12 +146,13 @@ Producer              Kafka Broker           Consumer
 5. **Serve to Consumers**: Makes message available for consumer polling
 
 #### Consumer Flow (consumer.py)
-1. **Subscribe**: Joins consumer group "order-tracker" and subscribes to "orders" topic (consumer.py:13)
-2. **Poll Continuously**: Calls `consumer.poll(1.0)` in infinite loop (consumer.py:19)
+
+1. **Subscribe**: Joins consumer group "order-tracker" and subscribes to "orders" topic ([consumer.py:13](consumer.py#L13))
+2. **Poll Continuously**: Calls `consumer.poll(1.0)` in infinite loop ([consumer.py:19](consumer.py#L19))
 3. **Receive Message**: Gets message from Kafka when available
-4. **Error Check**: Validates message has no errors (consumer.py:22-24)
-5. **Deserialize**: Decodes UTF-8 bytes and parses JSON (consumer.py:26-27)
-6. **Process**: Displays order details (consumer.py:28)
+4. **Error Check**: Validates message has no errors ([consumer.py:22-24](consumer.py#L22-L24))
+5. **Deserialize**: Decodes UTF-8 bytes and parses JSON ([consumer.py:26-27](consumer.py#L26-L27))
+6. **Process**: Displays order details ([consumer.py:28](consumer.py#L28))
 7. **Auto-Commit Offset**: Automatically tracks consumer position
 8. **Repeat**: Continues polling for new messages
 
@@ -162,6 +165,7 @@ Producer              Kafka Broker           Consumer
 ## Installation & Setup
 
 ### 1. Clone and Navigate to Project
+
 ```bash
 cd kafka_project
 ```
@@ -212,7 +216,7 @@ python consumer.py
 
 Output:
 ```
-=� Consumer is running and subscribed to orders topic
+🟢 Consumer is running and subscribed to orders topic
 ```
 
 The consumer will continuously poll for messages.
@@ -225,28 +229,28 @@ python producer.py
 
 Output:
 ```
- Delivered {"order_id": "...", "user": "david", "item": "chicken burger", "quantity": 5}
- Delivered to orders : partition 0 : at offset 0
+✅ Delivered {"order_id": "...", "user": "david", "item": "chicken burger", "quantity": 5}
+✅ Delivered to orders : partition 0 : at offset 0
 ```
 
 ### Step 3: Observe the Consumer
 
 The consumer terminal will show:
 ```
-=� Received order: 5 x chicken burger from david
+📦 Received order: 5 x chicken burger from david
 ```
 
 ## Project Structure
 
 ```
 kafka_project/
-   docker-compose.yaml    # Kafka broker configuration
-   producer.py            # Message producer script
-   consumer.py            # Message consumer script
-   requirements.txt       # Python dependencies
-   pyproject.toml        # Project metadata (uv)
-   uv.lock               # Dependency lock file
-   README.md             # This file
+├── docker-compose.yaml    # Kafka broker configuration
+├── producer.py            # Message producer script
+├── consumer.py            # Message consumer script
+├── requirements.txt       # Python dependencies
+├── pyproject.toml         # Project metadata (uv)
+├── uv.lock                # Dependency lock file
+└── README.md              # This file
 ```
 
 ## How It Works
@@ -459,3 +463,11 @@ docker-compose down -v
 - [Confluent Kafka Python](https://docs.confluent.io/kafka-clients/python/current/overview.html)
 - [Kafka in KRaft Mode](https://kafka.apache.org/documentation/#kraft)
 - [Best Practices](https://kafka.apache.org/documentation/#bestpractices)
+
+## License
+
+This project is for educational purposes.
+
+---
+
+**Built with:** Python, Apache Kafka, Docker, Confluent Kafka Client
