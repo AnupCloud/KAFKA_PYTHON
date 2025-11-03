@@ -82,6 +82,8 @@ Apache Kafka is a distributed event streaming platform designed for:
 
 ## Architecture
 
+### High-Level Overview
+
 ```
 +---------------+         +------------------+         +---------------+
 |               | produce |                  | consume |               |
@@ -93,7 +95,13 @@ Apache Kafka is a distributed event streaming platform designed for:
                           +------------------+
 ```
 
-### Detailed Sequence Diagram
+### Complete Workflow Sequence Diagram
+
+![Kafka Sequence Diagram](https://raw.githubusercontent.com/AnupCloud/KAFKA_PYTHON/main/kafka_sequence_diagram.png)
+
+*The diagram above illustrates the complete message flow between Producer, Kafka Broker, and Consumer components, showing the step-by-step interaction including message production, storage, acknowledgment, and consumption.*
+
+### Detailed Sequence Diagram (Text Version)
 
 ```
 Producer              Kafka Broker           Consumer
@@ -463,11 +471,3 @@ docker-compose down -v
 - [Confluent Kafka Python](https://docs.confluent.io/kafka-clients/python/current/overview.html)
 - [Kafka in KRaft Mode](https://kafka.apache.org/documentation/#kraft)
 - [Best Practices](https://kafka.apache.org/documentation/#bestpractices)
-
-## License
-
-This project is for educational purposes.
-
----
-
-**Built with:** Python, Apache Kafka, Docker, Confluent Kafka Client
